@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+
+<html lang="es">
+    <header>
+        <title>DOM Javascript</title>
+    </header>
+    <head>
+
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1" id="wixDesktopViewport">        
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <h1 class="title">
+            <strong>Clientes Agregados</strong>
+        </h1>
+    </head>
+    <div class="d-grid gap-2 col-6 mx-auto">
+    <a href="index.html">
+        <button class="btn btn-primary" type="button" >INDEX</button>
+    </a>
+    
+    <a href="post_clientes.html">
+        <button class="btn btn-primary" type="button" >AGREGAR CLIENTES</button>
+    </a></div>
+    
+
+    <body>
+        
+        <h1>_____________________________________________________________________________________________________________________</h1>
+        
+        
+        <div class="position-relative">
+            <div class="position-absolute top-0 end-60">
+        
+                <table class="table">
+                    <thead class="table-dark">                    
+                <tr>
+                    <th>LINK</th>
+                    <th>Actualizar</th>
+                    <th>Borrar</th>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Numero</th>
+                </tr>
+            </thead>
+            </thead>
+            <tbody id="tbody_clientes"></tbody>
+
+        </table>
+    </div>
+    </div>
+   
+        <script type="text/javascript" src="get_clientes.js"></script>
+        
+
+        <script>
+            document.body.onload = get_clientes();
+        </script>
+    </body>
+</html>
+<body>
+    
+
+</body>

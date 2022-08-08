@@ -16,10 +16,16 @@ function add_user(){
  
      request.onload = ()=>{
         const status = request.status
+        const response=(request.responseText);
+        const datos = JSON.parse(response);
+        console.log(datos.token);
+        JSON.parse(request.responseText);
+
  
  
          if (status == 202){
              alert("Usuario registrado correctamnete");
+             sessionStorage.setItem("UID",datos.token);
              window.location.replace("/inicio.html");
  
          }

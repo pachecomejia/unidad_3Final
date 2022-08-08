@@ -5,6 +5,7 @@ function putClientes(){
     var nombre = document.getElementById("nombre");
     var email = document.getElementById("email");
     var numero = document.getElementById("numero");
+
     var payload ={
         "id_cliente": id_cliente.value,
         "nombre": nombre.value,
@@ -12,12 +13,13 @@ function putClientes(){
         "numero": numero.value 
 
     }
-    
+    var token = sessionStorage.getItem('UID')
+
     var request = new XMLHttpRequest();
     request.open("PUT","https://8000-pachecomeji-unidad3fina-mmu6o5n9ekr.ws-us59.gitpod.io/clientes/",true);
+    request.setRequestHeader("Authorization","Bearer " + token);
     request.setRequestHeader("Content-Type","application/json");
     request.setRequestHeader("Accept","application/json");
-    request.setRequestHeader("Authorization","Basic " +btoa("user" + ":" + "user"));
     
 
     request.onload = () =>{
@@ -30,7 +32,7 @@ function putClientes(){
         console.log("JSON: " + json);
         console.log("Status: " + status);
 
-        if(status == 200){
+        if(status == 202){
             alert(json.message);
             window.location.replace("/get_clientes.html");
         }

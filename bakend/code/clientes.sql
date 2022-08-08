@@ -1,4 +1,4 @@
-rop table if exists clientes;
+drop table if exists clientes;
 Create table clientes(
     id_cliente       integer primary key autoincrement,
 

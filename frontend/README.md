@@ -25,3 +25,5 @@ uvicorn main:app --reload
 
 docker images 
  python3 -m http.server 8080
+ docker start 5518afc9881e -i bakend 
+ docker start 307bf35ff170 -i frontend

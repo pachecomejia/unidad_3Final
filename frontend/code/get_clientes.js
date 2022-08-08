@@ -1,17 +1,17 @@
 function get_clientes(){
     var query = window.location.search.substring(1);
+
     
 
     console.log("Query: " + query)
-    //conectar el bakent
+    var token = sessionStorage.getItem('UID')
+    console.log (token);
     var request = new XMLHttpRequest();
-    
-
     request.open("GET","https://8000-pachecomeji-unidad3fina-mmu6o5n9ekr.ws-us59.gitpod.io/user/",true);
-    request.setRequestHeader("Accept","application/json");
-    
-    request.setRequestHeader("Authorization","Basic " +btoa("user" + ":" + "user"));
+    request.setRequestHeader("Authorization","Bearer " + token);
     request.setRequestHeader("Content-Type", "application/json");
+    request.setRequestHeader("Accept","application/json");
+
 
     const  tabla   = document.getElementById("tabla_clientes");
     const  thead   = document.getElementById("thead_clientes");

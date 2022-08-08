@@ -55,7 +55,6 @@ class delete(BaseModel):
 
 
 app = FastAPI()
-
 firebaseConfig = {
     "apiKey": "AIzaSyCEkkxRet_lOOvEY4Joq22udSyrHI7gOa0",
     "authDomain": "fb-api-29ea3.firebaseapp.com",
@@ -74,7 +73,6 @@ firebase = pyrebase.initialize_app(firebaseConfig)
 #######################################################################################3
 DATABASE_URL = os.path.join("clientes.sqlite")#base de datos a llamar 
 app = FastAPI()
-security = HTTPBasic()
 class Usuarios(BaseModel):
     username: str
     level: int
@@ -99,68 +97,124 @@ SecurityBearer = HTTPBearer()
 
 
 
-@app.get("/", response_model=response)#url donde se puede buscar 
+@app.get("/", response_model=response,tags= ["get"])#url donde se puede buscar 
 async def index(level: int() = Depends(SecurityBearer)):
     return {"message": "Fast API"}#mensaje de correcta ejecucion 
 #################################################################################################################
 #regresa a todos los usuarios agregados a la base de datos 
-@app.get("/user/", response_model=List[Cliente])
-async def get_clientes(level: int = Depends(SecurityBearer)):
-    with sqlite3.connect('clientes.sqlite') as connection:
-        connection.row_factory = sqlite3.Row
-        cursor = connection.cursor()
-        cursor.execute('SELECT * FROM clientes')
-        response = cursor.fetchall()
-        return response
+@app.get("/user/", response_model=List[Cliente],
+status_code= status.HTTP_202_ACCEPTED,
+summary = "Lista de clientes",
+description = "Da una lista de todos los clientes",
+tags= ["GET"])
+async def get_clientes(credentials: HTTPAuthorizationCredentials = Depends(SecurityBearer)):
+    try:
+        auth = firebase.auth()
+        user = auth.get_account_info(credentials.credentials)
+        uid = user['users'][0]['localId']
+
+        with sqlite3.connect('clientes.sqlite') as connection:
+            connection.row_factory = sqlite3.Row
+            cursor = connection.cursor()
+            cursor.execute('SELECT * FROM clientes')
+            response = cursor.fetchall()
+            return response
+    except Exception as error:
+        print(f"Error: {error}")
+        raise HTTPException(status_code= status.HTTP_401_UNAUTHORIZED)
 
 ##########################################################################################
-@app.get("/cliente/{id_cliente}", response_model=Cliente)
-async def clientes_parametros(id_cliente: int,level: int = Depends(SecurityBearer)):
-    with sqlite3.connect("clientes.sqlite") as connection:
-        connection.row_factory = sqlite3.Row
-        cursor = connection.cursor()
-        cursor.execute("Select * From clientes where id_cliente = {}".format(id_cliente))
-        response = cursor.fetchone()
-        if response is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="id_cliente no encontrado",
-                headers={"WWW-Authenticate": "Basic"},
-        )
-        return response
-###########################################################################################   
+@app.get("/cliente/{id_cliente}", response_model=Cliente,
+status_code= status.HTTP_202_ACCEPTED,
+summary = "Clientes por ID",
+description = "Retorna un cliente baso en un ID",
+tags =["get"])
+async def clientes_parametros(id_cliente: int, credentials: HTTPAuthorizationCredentials = Depends(SecurityBearer)):
+    try:
+        auth = firebase.auth()
+        user = auth.get_account_info(credentials.credentials)
+        uid = user['users'][0]['localId']
 
-@app.post("/cliente/", response_model=response)#url donde se puede buscar con el post /docs 
-async def cliente_add(cliente_add: Post, level: int = Depends(SecurityBearer)): #definicion de campos que pueden añadir 
-    with sqlite3.connect("clientes.sqlite") as connection: #creacion  de donde se conectara y dopnde se ecuentra la base de datos creada 
-        connection.row_factory = sqlite3.Row
-        cursor = connection.cursor()
-        cursor.execute(
-            "insert into clientes(nombre,email,numero) values ('{nombre}', '{email}','{numero}')".format(nombre=cliente_add.nombre, email=cliente_add.email, numero=cliente_add.numero)) #campos que incluira la base de datos creada esto para poder relizar una comparacion con la que se ecnuentra en el archivo clientes.sql
-        connection.commit()
-        return {"message":"usuario agregado"}#mensaje de la correcta ejecucion del post al añadir algun cambio 
-     
+        with sqlite3.connect("clientes.sqlite") as connection:
+            connection.row_factory = sqlite3.Row
+            cursor = connection.cursor()
+            cursor.execute("Select * From clientes where id_cliente = {}".format(id_cliente))
+            response = cursor.fetchone()
+            if response is None:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="id_cliente no encontrado",
+                    headers={"WWW-Authenticate": "Basic"},
+            )
+            return response
+    except Exception as error:
+            print(f"Error: {error}")
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+#########################################################################################3
+@app.post("/cliente/", response_model=response,
+status_code= status.HTTP_202_ACCEPTED,
+summary = "Agrega un nuevo cliente",
+description = "Agrega un cliente",
+tags= ["POST"])
 
-@app.put("/clientes/", response_model=response)#url donde se puede buscar con el put /docs 
-async def cliente_put(cliente_put: Update,level: int = Depends(SecurityBearer)): #en esta parte define los campos que deberia lleavar para poder modificar 
-    with sqlite3.connect("clientes.sqlite") as connection:#creacion de la conectividad y la ruta donde se encunetra el archivo de ejecucion
-        connection.row_factory = sqlite3.Row
-        cursor = connection.cursor()
-        cursor.execute("Update clientes set nombre = '{name}', email = '{email}',numero ='{numero}' where id_cliente = {id}".format(name=cliente_put.nombre,email=cliente_put.email,numero=cliente_put.numero,id=cliente_put.id_cliente))#campos que debe incluir el campo donde se de sea ejecutar
-        connection.commit()
-        return {"message":"usuario actualizado"}#mensaje de una correcta ejecucion 
-        
+async def cliente_add(cliente_add: Post, credentials: HTTPAuthorizationCredentials = Depends(SecurityBearer)): #definicion de campos que pueden añadir 
+    try:
+        auth = firebase.auth()
+        user = auth.get_account_info(credentials.credentials)
+        uid = user['users'][0]['localId']
 
-@app.delete("/delete/{id_cliente}", response_model=response)#crea una url donde se puede buscar dicho campo asi como los apartados que debe de llevar 
-async def cliente_delete(cliente_delete: delete, level: int = Depends(SecurityBearer)):#muestra el campo adicional 
-    with sqlite3.connect("clientes.sqlite") as connection:#conectividad con la carpeta en la que se debe alojar 
-        connection.row_factory = sqlite3.Row
-        cursor = connection.cursor()
-        cursor.execute("delete from clientes where id_cliente = {}".format(cliente_delete.id_cliente))#campos que se pueden eliminar 
-        connection.commit()        
-        return {"message":"usuario borrado"}#mensaje de que la ejhecucion del delete se ejecuto de manera correcta 
+        with sqlite3.connect("clientes.sqlite") as connection: #creacion  de donde se conectara y dopnde se ecuentra la base de datos creada 
+            connection.row_factory = sqlite3.Row
+            cursor = connection.cursor()
+            cursor.execute(
+                "insert into clientes(nombre,email,numero) values ('{nombre}', '{email}','{numero}')".format(nombre=cliente_add.nombre, email=cliente_add.email, numero=cliente_add.numero)) #campos que incluira la base de datos creada esto para poder relizar una comparacion con la que se ecnuentra en el archivo clientes.sql
+            connection.commit()
+            return {"message":"usuario agregado"}#mensaje de la correcta ejecucion del post al añadir algun cambio 
+    except Exception as error:
+        print(f"Error: {error}")
+        raise HTTPException(status_code= status.HTTP_401_UNAUTHORIZED)
 
+@app.put("/clientes/", response_model=response,
+status_code= status.HTTP_202_ACCEPTED,
+summary = "Actualizara algun cliente",
+description = "Actualizara un cliente basado en un id y nombre",
+tags = ["PUT"])
 
+async def cliente_put(cliente_put: Update,credentials:  HTTPAuthorizationCredentials = Depends(SecurityBearer)): #en esta parte define los campos que deberia lleavar para poder modificar 
+    try:
+        auth = firebase.auth()
+        user = auth.get_account_info(credentials.credentials)
+        uid = user['users'][0]['localId']
+        with sqlite3.connect("clientes.sqlite") as connection:#creacion de la conectividad y la ruta donde se encunetra el archivo de ejecucion
+            connection.row_factory = sqlite3.Row
+            cursor = connection.cursor()
+            cursor.execute("Update clientes set nombre = '{name}', email = '{email}',numero ='{numero}' where id_cliente = {id}".format(name=cliente_put.nombre,email=cliente_put.email,numero=cliente_put.numero,id=cliente_put.id_cliente))#campos que debe incluir el campo donde se de sea ejecutar
+            connection.commit()
+            return {"message":"usuario actualizado"}#mensaje de una correcta ejecucion 
+    except Exception as error:
+        print(f"Error: {error}")
+        raise HTTPException(status_code= status.HTTP_401_UNAUTHORIZED)     
+
+@app.delete("/delete/{id_cliente}", response_model=response,
+status_code= status.HTTP_202_ACCEPTED,
+summary = "Lista de clientes",
+description = "Da una lista de todos los clientes",
+tags= ["DELETE"])#crea una url donde se puede buscar dicho campo asi como los apartados que debe de llevar 
+async def cliente_delete(cliente_delete: delete, credentials: HTTPAuthorizationCredentials = Depends(SecurityBearer)):#muestra el campo adicional 
+    try:
+        auth = firebase.auth()
+        user = auth.get_account_info(credentials.credentials)
+        uid = user['users'][0]['localId']
+        with sqlite3.connect("clientes.sqlite") as connection:#conectividad con la carpeta en la que se debe alojar 
+            connection.row_factory = sqlite3.Row
+            cursor = connection.cursor()
+            cursor.execute("delete from clientes where id_cliente = {}".format(cliente_delete.id_cliente))#campos que se pueden eliminar 
+            connection.commit()        
+            return {"message":"usuario borrado"}#mensaje de que la ejhecucion del delete se ejecuto de manera correcta 
+
+    except Exception as error:
+        print(f"Error: {error}")
+        raise HTTPException(status_code= status.HTTP_401_UNAUTHORIZED)
 
 
 @app.get(

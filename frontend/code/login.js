@@ -4,6 +4,7 @@ function login_user(){
 
 
 
+
     var request = new XMLHttpRequest();
     request.open("GET","https://8000-pachecomeji-unidad3fina-mmu6o5n9ekr.ws-us59.gitpod.io/users/token/",true);
     request.setRequestHeader("Authorization", "Basic " + btoa(email + ":" + password));
@@ -12,11 +13,15 @@ function login_user(){
     
     request.onload = () =>{
         const status = request.status
+        const response=(request.responseText);
+        const datos = JSON.parse(response);
+        console.log(datos.token);
         JSON.parse(request.responseText);
 
         if (status == 202) {
 
             alert("Inicio Correcto");
+            sessionStorage.setItem("UID",datos.token);
             window.location.replace("/get_clientes.html");
        
 
@@ -33,3 +38,6 @@ function login_user(){
     };
    request.send();
 };
+
+
+

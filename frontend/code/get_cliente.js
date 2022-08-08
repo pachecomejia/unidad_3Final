@@ -2,13 +2,15 @@ function getClientes(){
     var id_cliente = window.location.search.substring(1);
     console.log("id_cliente: " +id_cliente);
     var request = new XMLHttpRequest();
+    var token = sessionStorage.getItem('UID')
+
 
 
 
     request.open("GET","https://8000-pachecomeji-unidad3fina-mmu6o5n9ekr.ws-us59.gitpod.io/cliente/"+id_cliente,true);
+    request.setRequestHeader("Authorization","Bearer " + token);
     request.setRequestHeader("Content-Type","application/json");
     request.setRequestHeader("Accept","application/json");
-    request.setRequestHeader("Authorization","Basic " +btoa("user" + ":" + "user"));
 
     request.onload = () =>{
         const response = request.responseText;
